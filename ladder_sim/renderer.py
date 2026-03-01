@@ -242,7 +242,7 @@ class LadderRenderer:
 
     def _draw_timer_block(self, x: int, y: int, elem, wire_color: str) -> int:
         c = self.canvas
-        bw, bh = 110, 52
+        bw, bh = 110, 36
         x1 = x + 8
         x2 = x1 + bw
         top = y - bh // 2
@@ -250,8 +250,6 @@ class LadderRenderer:
 
         ts = self.engine.timers.get(elem.bit)
         acc = int(ts.accumulated_ms) if ts else 0
-        done = ts.done if ts else False
-        done_color = COLOR_ENERGIZED if done else COLOR_DE
 
         c.create_line(x, y, x1, y, width=2, fill=wire_color)
         c.create_rectangle(x1, top, x2, bot, outline=wire_color, fill=COLOR_BLOCK_BG, width=2)
@@ -260,12 +258,7 @@ class LadderRenderer:
         c.create_text(x1 + 5, top + 4, anchor="nw",
                       text=f"{kind}  {elem.bit}", font=("Courier", 8, "bold"), fill="#000")
         c.create_text(x1 + 5, top + 18, anchor="nw",
-                      text=f"PRE: {elem.preset_ms} ms", font=("Courier", 8), fill="#333")
-        c.create_text(x1 + 5, top + 30, anchor="nw",
                       text=f"ACC: {acc} ms", font=("Courier", 8), fill="#333")
-        # DN indicator
-        c.create_text(x2 - 4, top + 4, anchor="ne",
-                      text="DN", font=("Courier", 8, "bold"), fill=done_color)
 
         c.create_line(x2, y, x2 + 8, y, width=2, fill=wire_color)
         return x2 + 8
@@ -276,7 +269,7 @@ class LadderRenderer:
 
     def _draw_counter_block(self, x: int, y: int, elem, wire_color: str) -> int:
         c = self.canvas
-        bw, bh = 110, 52
+        bw, bh = 110, 36
         x1 = x + 8
         x2 = x1 + bw
         top = y - bh // 2
@@ -284,8 +277,6 @@ class LadderRenderer:
 
         cs = self.engine.counters.get(elem.bit)
         count = cs.count if cs else 0
-        done = cs.done if cs else False
-        done_color = COLOR_ENERGIZED if done else COLOR_DE
 
         c.create_line(x, y, x1, y, width=2, fill=wire_color)
         c.create_rectangle(x1, top, x2, bot, outline=wire_color, fill=COLOR_BLOCK_BG, width=2)
@@ -294,11 +285,7 @@ class LadderRenderer:
         c.create_text(x1 + 5, top + 4, anchor="nw",
                       text=f"{kind}  {elem.bit}", font=("Courier", 8, "bold"), fill="#000")
         c.create_text(x1 + 5, top + 18, anchor="nw",
-                      text=f"PRE: {elem.preset}", font=("Courier", 8), fill="#333")
-        c.create_text(x1 + 5, top + 30, anchor="nw",
                       text=f"CNT: {count}", font=("Courier", 8), fill="#333")
-        c.create_text(x2 - 4, top + 4, anchor="ne",
-                      text="DN", font=("Courier", 8, "bold"), fill=done_color)
 
         c.create_line(x2, y, x2 + 8, y, width=2, fill=wire_color)
         return x2 + 8
