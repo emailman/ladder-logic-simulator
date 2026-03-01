@@ -48,6 +48,12 @@ class PLCEngine:
         if meta.get("type") == "input":
             self.bits[bit] = not self.bits.get(bit, False)
 
+    def set_input(self, bit: str, state: bool):
+        """Set a bit that has type 'input' to an explicit state."""
+        meta = self.bit_meta.get(bit, {})
+        if meta.get("type") == "input":
+            self.bits[bit] = state
+
     def scan(self):
         """Run one PLC scan cycle."""
         now = time.monotonic()

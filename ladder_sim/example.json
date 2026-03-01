@@ -1,8 +1,8 @@
 {
   "title": "Start-Stop + Timer + Counter Demo",
   "bits": {
-    "I0.0": {"label": "Start",    "type": "input"},
-    "I0.1": {"label": "Stop",     "type": "input"},
+    "I0.0": {"label": "Start",    "type": "input", "momentary": true},
+    "I0.1": {"label": "Stop",     "type": "input", "momentary": true},
     "Q0.0": {"label": "Motor",    "type": "output"},
     "T0":   {"label": "RunTimer", "type": "timer"},
     "C0":   {"label": "Cycles",   "type": "counter"}

@@ -46,8 +46,11 @@ class LadderApp(tk.Tk):
         # ── Renderer ───────────────────────────────────────────────────
         self.renderer = LadderRenderer(self.canvas, self.engine)
 
+        self._held_momentary: str | None = None  # bit currently held by mouse
+
         # ── Mouse bindings ─────────────────────────────────────────────
         self.canvas.bind("<Button-1>", self.on_click)
+        self.canvas.bind("<ButtonRelease-1>", self.on_release)
         self.canvas.bind("<MouseWheel>", self._on_mousewheel)   # Windows/macOS
         self.canvas.bind("<Button-4>", self._on_mousewheel)     # Linux scroll up
         self.canvas.bind("<Button-5>", self._on_mousewheel)     # Linux scroll down
@@ -62,18 +65,31 @@ class LadderApp(tk.Tk):
         self.after(SCAN_MS, self.scan_loop)
 
     def on_click(self, event):
-        # Translate canvas scroll position to canvas coordinates
         cx = self.canvas.canvasx(event.x)
         cy = self.canvas.canvasy(event.y)
         bit = self.renderer.hit_test(int(cx), int(cy))
         if bit:
-            self.engine.toggle_input(bit)
             meta = self.engine.bit_meta.get(bit, {})
             label = meta.get("label", bit)
-            state = "ON" if self.engine.bits.get(bit, False) else "OFF"
-            self.status_var.set(f"Toggled {bit} ({label}) → {state}")
+            if meta.get("momentary"):
+                self._held_momentary = bit
+                self.engine.set_input(bit, True)
+                self.status_var.set(f"Holding {bit} ({label}) — ON while pressed")
+            else:
+                self.engine.toggle_input(bit)
+                state = "ON" if self.engine.bits.get(bit, False) else "OFF"
+                self.status_var.set(f"Toggled {bit} ({label}) → {state}")
         else:
             self.status_var.set("Click an input contact to toggle it.")
+
+    def on_release(self, event):
+        if self._held_momentary:
+            bit = self._held_momentary
+            self._held_momentary = None
+            self.engine.set_input(bit, False)
+            meta = self.engine.bit_meta.get(bit, {})
+            label = meta.get("label", bit)
+            self.status_var.set(f"Released {bit} ({label}) → OFF")
 
     def _update_scroll_region(self):
         self.canvas.configure(scrollregion=self.canvas.bbox("all") or (0, 0, 960, 600))

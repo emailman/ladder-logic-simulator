@@ -2,13 +2,11 @@
 
 A desktop PLC ladder logic simulator written in Python using Tkinter. Loads a ladder program from a JSON file and runs a continuous scan cycle — just like a real PLC.
 
-![Ladder Logic Simulator](https://raw.githubusercontent.com/emailman/ladder-logic-simulator/master/docs/screenshot.png)
-
 ## Features
 
 - **Continuous scan cycle** — 100 ms scan loop mimicking real PLC behaviour
 - **Live energisation highlighting** — energised paths drawn in green, de-energised in grey
-- **Clickable input contacts** — toggle inputs directly on the canvas
+- **Clickable input contacts** — inputs can be configured as momentary (active while held) or latching toggle
 - **Supported instructions:**
   - `NO` / `NC` contacts (normally open / normally closed)
   - `coil` / `set` / `reset` output coils
@@ -18,7 +16,7 @@ A desktop PLC ladder logic simulator written in Python using Tkinter. Loads a la
 
 ## Requirements
 
-- Python 3.10+ (uses `match`-free dataclasses; compatible with 3.10+)
+- Python 3.10+
 - Tkinter (included with standard Python on Windows and most Linux distros)
 
 No third-party packages required.
@@ -33,14 +31,14 @@ python main.py myprogram.json   # loads a custom program
 
 ## JSON Program Format
 
-Programs are defined in JSON. Example:
+Programs are defined in JSON with two top-level sections: `bits` (tag declarations) and `rungs` (ladder logic).
 
 ```json
 {
   "title": "My Ladder Program",
   "bits": {
-    "I0.0": {"label": "Start",  "type": "input"},
-    "I0.1": {"label": "Stop",   "type": "input"},
+    "I0.0": {"label": "Start",  "type": "input",  "momentary": true},
+    "I0.1": {"label": "Stop",   "type": "input",  "momentary": true},
     "Q0.0": {"label": "Motor",  "type": "output"},
     "T0":   {"label": "Timer",  "type": "timer"},
     "C0":   {"label": "Counter","type": "counter"}
@@ -75,33 +73,70 @@ Programs are defined in JSON. Example:
 }
 ```
 
+### Bit declarations (`bits`)
+
+Each key is the tag name. Fields:
+
+| Field       | Required | Values                              | Description                                          |
+|-------------|----------|-------------------------------------|------------------------------------------------------|
+| `label`     | yes      | any string                          | Human-readable name shown on the canvas              |
+| `type`      | yes      | `input`, `output`, `timer`, `counter` | Controls click behaviour and engine handling       |
+| `momentary` | no       | `true`                              | Input is active only while the mouse button is held  |
+
+Omitting `momentary` (or setting it to `false`) makes an input latch on each click.
+
 ### Bit naming
 
-| Prefix | Type    | Example           |
-|--------|---------|-------------------|
-| `I0.x` | Input   | `I0.0` … `I0.15`  |
-| `Q0.x` | Output  | `Q0.0` … `Q0.15`  |
-| `Mx`   | Memory  | `M0`, `M1` …      |
-| `Tx`   | Timer   | `T0`, `T0.DN`, `T0.TT` |
-| `Cx`   | Counter | `C0`, `C0.DN`     |
+| Prefix | Type    | Example                    | Derived bits          |
+|--------|---------|----------------------------|-----------------------|
+| `I0.x` | Input   | `I0.0` … `I0.15`          | —                     |
+| `Q0.x` | Output  | `Q0.0` … `Q0.15`          | —                     |
+| `Mx`   | Memory  | `M0`, `M1` …              | —                     |
+| `Tx`   | Timer   | `T0`, `T1` …              | `T0.DN`, `T0.TT`      |
+| `Cx`   | Counter | `C0`, `C1` …              | `C0.DN`               |
+
+Timer and counter derived bits (`.DN`, `.TT`) are created automatically by the engine and do not need to be declared in `bits`.
+
+### Element types in `series`
+
+| JSON `type` | Element      | Extra fields            |
+|-------------|--------------|-------------------------|
+| `NO`        | Contact (NO) | `bit`                   |
+| `NC`        | Contact (NC) | `bit`                   |
+| `coil`      | Output coil  | `bit`                   |
+| `set`       | Set coil     | `bit`                   |
+| `reset`     | Reset coil   | `bit`                   |
+| `TON`       | On-delay timer | `bit`, `preset_ms`    |
+| `TOF`       | Off-delay timer | `bit`, `preset_ms`   |
+| `CTU`       | Count-up counter | `bit`, `preset`     |
+| `CTD`       | Count-down counter | `bit`, `preset`   |
+
+Parallel branches are expressed as a dict inside a `series` list:
+
+```json
+{"parallel": [
+  [ {"type": "NO", "bit": "I0.0"} ],
+  [ {"type": "NO", "bit": "Q0.0"} ]
+]}
+```
 
 ## Project Structure
 
 ```
 ladder_sim/
-├── main.py       — Tkinter app, scan loop, click handler
-├── engine.py     — PLC scan engine, timer/counter state
-├── elements.py   — Dataclass definitions for each element type
-├── renderer.py   — Canvas drawing and hit-test for clicks
-├── loader.py     — JSON parser and validation
-└── example.json  — Demo program (start/stop + timer + counter)
+├── main.py       — Tkinter app, 100 ms scan loop, mouse press/release handler
+├── engine.py     — PLC scan engine, timer/counter state, input control
+├── elements.py   — Dataclass definitions for Contact, Coil, TON, TOF, CTU, CTD
+├── renderer.py   — Canvas drawing, hit-testing, layout constants
+├── loader.py     — JSON parser: converts raw dicts to element dataclasses
+└── example.json  — Demo program (start/stop + 5 s timer + cycle counter)
 ```
 
 ## Demo Walkthrough
 
-1. Run `python main.py`
-2. Click **I0.0 (Start)** — Motor `Q0.0` energises and seals itself
-3. Click **I0.0** again to release — Motor stays on via the sealing contact
-4. Click **I0.1 (Stop)** — Motor drops out
-5. Re-latch and watch the **TON timer** accumulate toward 5000 ms
-6. When `T0.DN` fires, the **CTU counter** increments
+1. Run `python main.py` from the `ladder_sim/` directory.
+2. **Press and hold I0.0 (Start)** — Motor `Q0.0` energises; the `Q0.0` sealing contact latches.
+3. **Release I0.0** — Motor stays on through the sealing contact.
+4. Watch the **TON timer** accumulate toward 5000 ms. Each time `T0.DN` fires, the **CTU counter** increments.
+5. **Press and hold I0.1 (Stop)** — the NC Stop contact opens, Motor drops out, sealing contact releases.
+6. **Release I0.1** — circuit is ready for the next Start press.
