@@ -27,7 +27,7 @@
       ]
     },
     {
-      "comment": "Count cycles (timer done pulse → CTU)",
+      "comment": "Count cycles (timer done pulse -> CTU)",
       "series": [
         {"type": "NO",  "bit": "T0.DN"},
         {"type": "CTU", "bit": "C0", "preset": 10}
