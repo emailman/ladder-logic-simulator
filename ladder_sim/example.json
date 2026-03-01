@@ -1,0 +1,37 @@
+{
+  "title": "Start-Stop + Timer + Counter Demo",
+  "bits": {
+    "I0.0": {"label": "Start",    "type": "input"},
+    "I0.1": {"label": "Stop",     "type": "input"},
+    "Q0.0": {"label": "Motor",    "type": "output"},
+    "T0":   {"label": "RunTimer", "type": "timer"},
+    "C0":   {"label": "Cycles",   "type": "counter"}
+  },
+  "rungs": [
+    {
+      "comment": "Start-Stop Sealing Circuit",
+      "series": [
+        {"parallel": [
+          [{"type": "NO", "bit": "I0.0"}],
+          [{"type": "NO", "bit": "Q0.0"}]
+        ]},
+        {"type": "NC",   "bit": "I0.1"},
+        {"type": "coil", "bit": "Q0.0"}
+      ]
+    },
+    {
+      "comment": "Run Timer (5 s on-delay)",
+      "series": [
+        {"type": "NO",  "bit": "Q0.0"},
+        {"type": "TON", "bit": "T0", "preset_ms": 5000}
+      ]
+    },
+    {
+      "comment": "Count cycles (timer done pulse → CTU)",
+      "series": [
+        {"type": "NO",  "bit": "T0.DN"},
+        {"type": "CTU", "bit": "C0", "preset": 10}
+      ]
+    }
+  ]
+}
