@@ -129,9 +129,9 @@ class PLCEngine:
                 ts.last_time = now
             elapsed = (now - ts.last_time) * 1000.0  # ms
             ts.last_time = now
-            ts.accumulated_ms = min(ts.accumulated_ms + elapsed, elem.preset_ms)
-            ts.timing = ts.accumulated_ms < elem.preset_ms
-            ts.done = ts.accumulated_ms >= elem.preset_ms
+            ts.accumulated_ms += elapsed
+            ts.timing = True
+            ts.done = False
         else:
             ts.accumulated_ms = 0.0
             ts.done = False
