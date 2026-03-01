@@ -133,7 +133,6 @@ class PLCEngine:
             ts.timing = True
             ts.done = False
         else:
-            ts.accumulated_ms = 0.0
             ts.done = False
             ts.timing = False
             ts.last_time = None
