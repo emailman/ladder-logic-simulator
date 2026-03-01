@@ -74,11 +74,11 @@ class LadderApp(tk.Tk):
             if meta.get("momentary"):
                 self._held_momentary = bit
                 self.engine.set_input(bit, True)
-                self.status_var.set(f"Holding {bit} ({label}) — ON while pressed")
+                self.status_var.set(f"Holding {bit} ({label}) - ON while pressed")
             else:
                 self.engine.toggle_input(bit)
                 state = "ON" if self.engine.bits.get(bit, False) else "OFF"
-                self.status_var.set(f"Toggled {bit} ({label}) → {state}")
+                self.status_var.set(f"Toggled {bit} ({label}) -> {state}")
         else:
             self.status_var.set("Click an input contact to toggle it.")
 
@@ -89,7 +89,7 @@ class LadderApp(tk.Tk):
             self.engine.set_input(bit, False)
             meta = self.engine.bit_meta.get(bit, {})
             label = meta.get("label", bit)
-            self.status_var.set(f"Released {bit} ({label}) → OFF")
+            self.status_var.set(f"Released {bit} ({label}) -> OFF")
 
     def _update_scroll_region(self):
         self.canvas.configure(scrollregion=self.canvas.bbox("all") or (0, 0, 960, 600))
