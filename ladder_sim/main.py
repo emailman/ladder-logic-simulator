@@ -18,6 +18,12 @@ class LadderApp(tk.Tk):
 
         self.engine = PLCEngine(program)
 
+        # ── Toolbar ────────────────────────────────────────────────────
+        toolbar = tk.Frame(self, bd=1, relief=tk.RAISED)
+        toolbar.pack(side=tk.TOP, fill=tk.X)
+        tk.Button(toolbar, text="Reset", command=self.on_reset).pack(
+            side=tk.LEFT, padx=4, pady=2)
+
         # ── Scrollable canvas ──────────────────────────────────────────
         frame = tk.Frame(self)
         frame.pack(fill=tk.BOTH, expand=True)
@@ -90,6 +96,10 @@ class LadderApp(tk.Tk):
             meta = self.engine.bit_meta.get(bit, {})
             label = meta.get("label", bit)
             self.status_var.set(f"Released {bit} ({label}) -> OFF")
+
+    def on_reset(self):
+        self.engine.reset_timers_and_counters()
+        self.status_var.set("Timers and counter reset.")
 
     def _update_scroll_region(self):
         self.canvas.configure(scrollregion=self.canvas.bbox("all") or (0, 0, 960, 600))

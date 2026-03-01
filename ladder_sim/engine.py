@@ -54,6 +54,22 @@ class PLCEngine:
         if meta.get("type") == "input":
             self.bits[bit] = state
 
+    def reset_timers_and_counters(self):
+        """Reset all timer accumulated values and all counter counts to zero."""
+        for bit, ts in self.timers.items():
+            ts.accumulated_ms = 0.0
+            ts.done = False
+            ts.timing = False
+            ts.last_time = None
+            ts.enabled = False
+            self.bits[bit + ".DN"] = False
+            self.bits[bit + ".TT"] = False
+        for bit, cs in self.counters.items():
+            cs.count = 0
+            cs.done = False
+            cs.prev_input = False
+            self.bits[bit + ".DN"] = False
+
     def scan(self):
         """Run one PLC scan cycle."""
         now = time.monotonic()
