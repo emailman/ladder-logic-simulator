@@ -20,8 +20,8 @@ Requires only the Python standard library (Python 3.10+, Tkinter included on Win
 
 ```
 ladder_sim/
-├── main.py       — LadderApp (Tk root), scan loop, mouse press/release handler
-├── engine.py     — PLCEngine: scan(), toggle_input(), set_input(), timer/counter state
+├── main.py       — LadderApp (Tk root), scan loop, toolbar, mouse press/release handler
+├── engine.py     — PLCEngine: scan(), toggle_input(), set_input(), reset_timers_and_counters()
 ├── elements.py   — Dataclasses: Contact, Coil, TON, TOF, CTU, CTD, TimerState, CounterState
 ├── renderer.py   — LadderRenderer: draw(), hit_test(), all canvas drawing logic
 ├── loader.py     — load(path) → parses JSON into element dataclasses
@@ -45,6 +45,7 @@ ladder_sim/
 - `scan()` calls `_eval_series()` for each rung; timers use `time.monotonic()` for elapsed ms
 - `toggle_input(bit)` — flips a bit with `type == "input"` (used for latching inputs)
 - `set_input(bit, state)` — sets a bit with `type == "input"` to an explicit state (used for momentary inputs)
+- `reset_timers_and_counters()` — zeroes all timer accumulated values and counter counts, clears all `.DN`/`.TT` bits; called only by the Reset button
 
 ### Renderer (`renderer.py`)
 
@@ -75,11 +76,16 @@ Reads energisation from `engine.bits` directly — no separate pass needed. Layo
 
 Parallel blocks are left as `{"parallel": [[...], [...]]}` dicts in the series list so the engine and renderer can distinguish them from element dataclasses.
 
+### Toolbar (`main.py`)
+
+A raised `tk.Frame` packed at the top of the window. Currently contains one button:
+- **Reset** — calls `engine.reset_timers_and_counters()`. This is the only way to reset counters; there is no reset coil in the ladder program.
+
 ### Mouse Interaction (`main.py`)
 
 Two bindings on the canvas:
-- `<Button-1>` → `on_click`: hits `renderer.hit_test()`; if the bit has `"momentary": true` in metadata, calls `engine.set_input(bit, True)` and stores bit in `self._held_momentary`; otherwise calls `engine.toggle_input(bit)`
-- `<ButtonRelease-1>` → `on_release`: if `_held_momentary` is set, calls `engine.set_input(bit, False)` to release it
+- `<Button-1>` -> `on_click`: hits `renderer.hit_test()`; if the bit has `"momentary": true` in metadata, calls `engine.set_input(bit, True)` and stores bit in `self._held_momentary`; otherwise calls `engine.toggle_input(bit)`
+- `<ButtonRelease-1>` -> `on_release`: if `_held_momentary` is set, calls `engine.set_input(bit, False)` to release it
 
 ## JSON Program Schema
 

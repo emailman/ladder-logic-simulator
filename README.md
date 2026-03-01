@@ -7,6 +7,7 @@ A desktop PLC ladder logic simulator written in Python using Tkinter. Loads a la
 - **Continuous scan cycle** — 100 ms scan loop mimicking real PLC behaviour
 - **Live energisation highlighting** — energised paths drawn in green, de-energised in grey
 - **Clickable input contacts** — inputs can be configured as momentary (active while held) or latching toggle
+- **Reset button** — resets all timer accumulated values and counter counts to zero
 - **Supported instructions:**
   - `NO` / `NC` contacts (normally open / normally closed)
   - `coil` / `set` / `reset` output coils
@@ -140,3 +141,4 @@ ladder_sim/
 4. Watch the **TON timer** accumulate toward 5000 ms. Each time `T0.DN` fires, the **CTU counter** increments.
 5. **Press and hold I0.1 (Stop)** — the NC Stop contact opens, Motor drops out, sealing contact releases.
 6. **Release I0.1** — circuit is ready for the next Start press.
+7. Click **Reset** in the toolbar to zero the timer and counter at any time.
