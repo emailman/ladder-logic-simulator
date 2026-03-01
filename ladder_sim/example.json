@@ -27,9 +27,9 @@
       ]
     },
     {
-      "comment": "Count cycles (timer done pulse -> CTU)",
+      "comment": "Count cycles (motor stop -> CTU)",
       "series": [
-        {"type": "NO",  "bit": "T0.DN"},
+        {"type": "NC",  "bit": "Q0.0"},
         {"type": "CTU", "bit": "C0", "preset": 10}
       ]
     }
