@@ -35,7 +35,7 @@ def load(path: str) -> dict:
       bits   : dict[str, dict]  — raw bit metadata from JSON
       rungs  : list[dict]       — each rung has 'comment' and 'series'
     """
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     rungs = []
