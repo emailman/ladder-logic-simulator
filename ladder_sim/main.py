@@ -13,7 +13,7 @@ class LadderApp(tk.Tk):
     def __init__(self, json_path: str):
         super().__init__()
         program = load(json_path)
-        self.title(f"Ladder Logic Simulator — {program['title']}")
+        self.title(f"Ladder Logic Simulator - {program['title']}")
         self.resizable(True, True)
 
         self.engine = PLCEngine(program)
