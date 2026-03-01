@@ -45,7 +45,7 @@ ladder_sim/
 - `scan()` calls `_eval_series()` for each rung; timers use `time.monotonic()` for elapsed ms
 - `toggle_input(bit)` — flips a bit with `type == "input"` (used for latching inputs)
 - `set_input(bit, state)` — sets a bit with `type == "input"` to an explicit state (used for momentary inputs)
-- `reset_timers_and_counters()` — zeroes all timer accumulated values and counter counts, clears all `.DN`/`.TT` bits; called only by the Reset button
+- `reset_timers_and_counters()` — zeroes all timer accumulated values and counter counts, clears all `.DN`/`.TT` bits; the only way to reset either (called by the Reset button)
 
 ### Renderer (`renderer.py`)
 
@@ -79,7 +79,7 @@ Parallel blocks are left as `{"parallel": [[...], [...]]}` dicts in the series l
 ### Toolbar (`main.py`)
 
 A raised `tk.Frame` packed at the top of the window. Currently contains one button:
-- **Reset** — calls `engine.reset_timers_and_counters()`. This is the only way to reset counters; there is no reset coil in the ladder program.
+- **Reset** — calls `engine.reset_timers_and_counters()`. This is the only way to reset timers and counters; there is no reset coil in the ladder program.
 
 ### Mouse Interaction (`main.py`)
 
@@ -152,6 +152,16 @@ Two bindings on the canvas:
 3. Add initialisation in `engine.py:_init_series()` if it has runtime state
 4. Add evaluation in `engine.py:_eval_series()`
 5. Add a draw method in `renderer.py` and call it from `_draw_series()`
+
+### TON Timer Behaviour
+
+The TON in this simulator does **not** follow standard IEC 61131-3 semantics:
+- ACC accumulates freely while the input is energised (no cap at preset)
+- DN is never set; the timer never fires automatically
+- When the input de-energises, ACC **holds** its current value (does not reset)
+- ACC only resets to zero via `reset_timers_and_counters()` (the Reset button)
+
+The timer acts as a pausable run-time accumulator. The `preset_ms` value is displayed but has no effect on control logic.
 
 ### Modifying the Scan Loop
 
