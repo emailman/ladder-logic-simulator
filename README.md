@@ -64,9 +64,9 @@ Programs are defined in JSON with two top-level sections: `bits` (tag declaratio
       ]
     },
     {
-      "comment": "Count cycles",
+      "comment": "Count cycles (motor stop -> CTU)",
       "series": [
-        {"type": "NO",  "bit": "T0.DN"},
+        {"type": "NC",  "bit": "Q0.0"},
         {"type": "CTU", "bit": "C0", "preset": 10}
       ]
     }
@@ -139,6 +139,6 @@ ladder_sim/
 2. **Press and hold I0.0 (Start)** — Motor `Q0.0` energises; the `Q0.0` sealing contact latches.
 3. **Release I0.0** — Motor stays on through the sealing contact.
 4. Watch the **TON timer** accumulate run time.
-5. **Press and hold I0.1 (Stop)** — the NC Stop contact opens, Motor drops out; the timer pauses and holds its value.
+5. **Press and hold I0.1 (Stop)** — Motor drops out; the timer pauses, holds its value, and the **cycle counter increments**.
 6. **Release I0.1** and press Start again — the timer resumes from where it left off.
 7. Click **Reset** in the toolbar to zero the timer and counter at any time.

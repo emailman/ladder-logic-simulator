@@ -161,7 +161,13 @@ The TON in this simulator does **not** follow standard IEC 61131-3 semantics:
 - When the input de-energises, ACC **holds** its current value (does not reset)
 - ACC only resets to zero via `reset_timers_and_counters()` (the Reset button)
 
-The timer acts as a pausable run-time accumulator. The `preset_ms` value is displayed but has no effect on control logic.
+The timer acts as a pausable run-time accumulator. `preset_ms` is stored but neither displayed nor used in control logic.
+
+### Cycle Counter Pattern
+
+The cycle counter (C0) uses a `NC Q0.0` contact feeding the CTU. Because the NC contact closes when Q0.0 goes False, the CTU sees a rising edge exactly when the motor transitions from running to stopped. This is pure ladder logic — no engine changes are needed to detect falling edges on output bits.
+
+Timer and counter blocks display only the type/bit header and live value (ACC ms or CNT). PRE and DN are not shown.
 
 ### Modifying the Scan Loop
 
