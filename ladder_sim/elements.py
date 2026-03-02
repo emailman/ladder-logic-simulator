@@ -43,6 +43,7 @@ class CounterState:
     count: int = 0
     done: bool = False
     prev_input: bool = False
+    initialized: bool = False
 
 
 @dataclass

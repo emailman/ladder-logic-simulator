@@ -68,6 +68,7 @@ class PLCEngine:
             cs.count = 0
             cs.done = False
             cs.prev_input = False
+            cs.initialized = False
             self.bits[bit + ".DN"] = False
 
     def scan(self):
@@ -163,7 +164,9 @@ class PLCEngine:
 
     def _exec_ctu(self, elem: CTU, power: bool):
         cs = self.counters[elem.bit]
-        if power and not cs.prev_input:
+        if not cs.initialized:
+            cs.initialized = True
+        elif power and not cs.prev_input:
             cs.count += 1
             cs.done = cs.count >= elem.preset
         cs.prev_input = power
@@ -171,7 +174,9 @@ class PLCEngine:
 
     def _exec_ctd(self, elem: CTD, power: bool):
         cs = self.counters[elem.bit]
-        if power and not cs.prev_input:
+        if not cs.initialized:
+            cs.initialized = True
+        elif power and not cs.prev_input:
             cs.count = max(cs.count - 1, 0)
             cs.done = cs.count >= elem.preset
         cs.prev_input = power
