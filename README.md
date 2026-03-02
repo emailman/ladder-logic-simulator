@@ -2,6 +2,8 @@
 
 A desktop PLC ladder logic simulator written in Python using Tkinter. Loads a ladder program from a JSON file and runs a continuous scan cycle — just like a real PLC.
 
+![Ladder Logic Simulator screenshot](docs/screenshot.png)
+
 ## Features
 
 - **Continuous scan cycle** — 100 ms scan loop mimicking real PLC behaviour

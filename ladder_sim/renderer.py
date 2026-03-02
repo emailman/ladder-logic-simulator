@@ -171,8 +171,8 @@ class LadderRenderer:
             contact_on = bit_val
         contact_color = COLOR_ENERGIZED if contact_on else COLOR_DE
 
-        # Wire in
-        c.create_line(x, y, x1, y, width=2, fill=wire_color)
+        # Wire in (extends to left contact bar to avoid gap)
+        c.create_line(x, y, bar_left, y, width=2, fill=wire_color)
         # Left bar
         c.create_line(bar_left, y - 10, bar_left, y + 10, width=2, fill=contact_color)
         # Wire between bars
@@ -218,8 +218,8 @@ class LadderRenderer:
             bit_val = self.engine.bits.get(elem.bit, False)
             coil_color = COLOR_COIL_ON if bit_val else COLOR_DE
 
-        # Wire in
-        c.create_line(x, y, x1, y, width=2, fill=wire_color)
+        # Wire in (extends to left edge of circle to avoid gap)
+        c.create_line(x, y, cx - r, y, width=2, fill=wire_color)
         # Circle
         c.create_oval(cx - r, y - r, cx + r, y + r,
                       outline=coil_color, width=2, fill=COLOR_BG)
