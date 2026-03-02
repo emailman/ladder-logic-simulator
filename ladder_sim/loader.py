@@ -12,6 +12,8 @@ def _parse_element(raw):
         return Contact(type=t, bit=raw["bit"])
     if t in ("coil", "set", "reset"):
         return Coil(type=t, bit=raw["bit"])
+    if t == "reset_all":
+        return Coil(type=t)
     if t == "TON":
         return TON(bit=raw["bit"], preset_ms=raw["preset_ms"])
     if t == "TOF":

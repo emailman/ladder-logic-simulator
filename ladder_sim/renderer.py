@@ -212,8 +212,11 @@ class LadderRenderer:
         cx = (x1 + x2) // 2
         r = 12
 
-        bit_val = self.engine.bits.get(elem.bit, False)
-        coil_color = COLOR_COIL_ON if bit_val else COLOR_DE
+        if elem.type == "reset_all":
+            coil_color = wire_color
+        else:
+            bit_val = self.engine.bits.get(elem.bit, False)
+            coil_color = COLOR_COIL_ON if bit_val else COLOR_DE
 
         # Wire in
         c.create_line(x, y, x1, y, width=2, fill=wire_color)
@@ -224,15 +227,17 @@ class LadderRenderer:
         c.create_line(cx + r, y, x2, y, width=2, fill=coil_color)
 
         # Type letter inside circle
-        symbol = {"coil": "", "set": "S", "reset": "R"}.get(elem.type, "")
+        symbol = {"coil": "", "set": "S", "reset": "R", "reset_all": "RST"}.get(elem.type, "")
         if symbol:
-            c.create_text(cx, y, text=symbol, font=("Helvetica", 9, "bold"),
+            font_size = 7 if elem.type == "reset_all" else 9
+            c.create_text(cx, y, text=symbol, font=("Helvetica", font_size, "bold"),
                           fill=coil_color)
 
         # Labels
-        label = self._bit_label(elem.bit)
-        c.create_text(cx, y - 20, text=elem.bit, font=("Courier", 8), fill="#333333")
-        c.create_text(cx, y + 20, text=label, font=("Helvetica", 8), fill="#333333")
+        if elem.type != "reset_all":
+            label = self._bit_label(elem.bit)
+            c.create_text(cx, y - 20, text=elem.bit, font=("Courier", 8), fill="#333333")
+            c.create_text(cx, y + 20, text=label, font=("Helvetica", 8), fill="#333333")
 
         return x2
 

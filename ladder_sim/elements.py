@@ -11,8 +11,8 @@ class Contact:
 
 @dataclass
 class Coil:
-    type: str   # "coil" | "set" | "reset"
-    bit: str
+    type: str   # "coil" | "set" | "reset" | "reset_all"
+    bit: str = ""
 
 
 @dataclass

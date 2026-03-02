@@ -5,7 +5,8 @@
     "I0.1": {"label": "Stop",     "type": "input", "momentary": true},
     "Q0.0": {"label": "Motor",    "type": "output"},
     "T0":   {"label": "RunTimer", "type": "timer"},
-    "C0":   {"label": "Cycles",   "type": "counter"}
+    "C0":   {"label": "Cycles",   "type": "counter"},
+    "I0.2": {"label": "Reset",    "type": "input", "momentary": true}
   },
   "rungs": [
     {
@@ -31,6 +32,13 @@
       "series": [
         {"type": "NC",  "bit": "Q0.0"},
         {"type": "CTU", "bit": "C0", "preset": 10}
+      ]
+    },
+    {
+      "comment": "Reset timers and counter",
+      "series": [
+        {"type": "NO",        "bit": "I0.2"},
+        {"type": "reset_all"}
       ]
     }
   ]

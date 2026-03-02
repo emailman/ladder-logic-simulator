@@ -122,6 +122,9 @@ class PLCEngine:
                     self.counters[elem.bit].count = 0
                     self.counters[elem.bit].done = False
                     self.bits[elem.bit + ".DN"] = False
+        elif elem.type == "reset_all":
+            if power:
+                self.reset_timers_and_counters()
 
     def _exec_ton(self, elem: TON, power: bool, now: float):
         ts = self.timers[elem.bit]

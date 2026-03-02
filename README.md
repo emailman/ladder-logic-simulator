@@ -7,12 +7,12 @@ A desktop PLC ladder logic simulator written in Python using Tkinter. Loads a la
 - **Continuous scan cycle** — 100 ms scan loop mimicking real PLC behaviour
 - **Live energisation highlighting** — energised paths drawn in green, de-energised in grey
 - **Clickable input contacts** — inputs can be configured as momentary (active while held) or latching toggle
-- **Reset button** — zeroes all timer accumulated values and counter counts; the only way to reset either
 - **Supported instructions:**
   - `NO` / `NC` contacts (normally open / normally closed)
   - `coil` / `set` / `reset` output coils
+  - `reset_all` coil — resets all timer accumulated values and counter counts when energised
   - `TON` / `TOF` timers (on-delay / off-delay) with live accumulated value display
-  - `CTU` / `CTD` counters (up / down) with rising-edge detection
+  - `CTU` / `CTD` counters (up / down) with rising-edge detection; count starts at 0
   - Parallel branches (any number of rungs in parallel)
 
 ## Requirements
@@ -42,7 +42,8 @@ Programs are defined in JSON with two top-level sections: `bits` (tag declaratio
     "I0.1": {"label": "Stop",   "type": "input",  "momentary": true},
     "Q0.0": {"label": "Motor",  "type": "output"},
     "T0":   {"label": "Timer",  "type": "timer"},
-    "C0":   {"label": "Counter","type": "counter"}
+    "C0":   {"label": "Counter","type": "counter"},
+    "I0.2": {"label": "Reset",  "type": "input",   "momentary": true}
   },
   "rungs": [
     {
@@ -68,6 +69,13 @@ Programs are defined in JSON with two top-level sections: `bits` (tag declaratio
       "series": [
         {"type": "NC",  "bit": "Q0.0"},
         {"type": "CTU", "bit": "C0", "preset": 10}
+      ]
+    },
+    {
+      "comment": "Reset timers and counter",
+      "series": [
+        {"type": "NO",        "bit": "I0.2"},
+        {"type": "reset_all"}
       ]
     }
   ]
@@ -107,6 +115,7 @@ Timer and counter derived bits (`.DN`, `.TT`) are created automatically by the e
 | `coil`      | Output coil  | `bit`                   |
 | `set`       | Set coil     | `bit`                   |
 | `reset`     | Reset coil   | `bit`                   |
+| `reset_all` | Reset-all coil | *(none)*              |
 | `TON`       | On-delay timer | `bit`, `preset_ms`    |
 | `TOF`       | Off-delay timer | `bit`, `preset_ms`   |
 | `CTU`       | Count-up counter | `bit`, `preset`     |
@@ -141,4 +150,4 @@ ladder_sim/
 4. Watch the **TON timer** accumulate run time.
 5. **Press and hold I0.1 (Stop)** — Motor drops out; the timer pauses, holds its value, and the **cycle counter increments**.
 6. **Release I0.1** and press Start again — the timer resumes from where it left off.
-7. Click **Reset** in the toolbar to zero the timer and counter at any time.
+7. **Press and hold I0.2 (Reset)** — energises the `reset_all` coil, zeroing the timer and counter.

@@ -20,7 +20,7 @@ Requires only the Python standard library (Python 3.10+, Tkinter included on Win
 
 ```
 ladder_sim/
-├── main.py       — LadderApp (Tk root), scan loop, toolbar, mouse press/release handler
+├── main.py       — LadderApp (Tk root), scan loop, mouse press/release handler
 ├── engine.py     — PLCEngine: scan(), toggle_input(), set_input(), reset_timers_and_counters()
 ├── elements.py   — Dataclasses: Contact, Coil, TON, TOF, CTU, CTD, TimerState, CounterState
 ├── renderer.py   — LadderRenderer: draw(), hit_test(), all canvas drawing logic
@@ -45,7 +45,7 @@ ladder_sim/
 - `scan()` calls `_eval_series()` for each rung; timers use `time.monotonic()` for elapsed ms
 - `toggle_input(bit)` — flips a bit with `type == "input"` (used for latching inputs)
 - `set_input(bit, state)` — sets a bit with `type == "input"` to an explicit state (used for momentary inputs)
-- `reset_timers_and_counters()` — zeroes all timer accumulated values and counter counts, clears all `.DN`/`.TT` bits; the only way to reset either (called by the Reset button)
+- `reset_timers_and_counters()` — zeroes all timer accumulated values and counter counts, clears all `.DN`/`.TT` bits; called by the `reset_all` coil in the ladder program
 
 ### Renderer (`renderer.py`)
 
@@ -76,10 +76,9 @@ Reads energisation from `engine.bits` directly — no separate pass needed. Layo
 
 Parallel blocks are left as `{"parallel": [[...], [...]]}` dicts in the series list so the engine and renderer can distinguish them from element dataclasses.
 
-### Toolbar (`main.py`)
+### Reset (`reset_all` coil)
 
-A raised `tk.Frame` packed at the top of the window. Currently contains one button:
-- **Reset** — calls `engine.reset_timers_and_counters()`. This is the only way to reset timers and counters; there is no reset coil in the ladder program.
+There is no toolbar. Timers and counters are reset entirely from within the ladder program using the `reset_all` coil type. When a rung driving a `reset_all` coil is energised, the engine calls `reset_timers_and_counters()` as a side effect — no bit is written. In `example.json`, a momentary `I0.2` input contact drives the `reset_all` coil.
 
 ### Mouse Interaction (`main.py`)
 
@@ -127,6 +126,7 @@ Two bindings on the canvas:
 | `coil`       | `Coil`    | `bit`                    |
 | `set`        | `Coil`    | `bit`                    |
 | `reset`      | `Coil`    | `bit`                    |
+| `reset_all`  | `Coil`    | *(none)*                 |
 | `TON`        | `TON`     | `bit`, `preset_ms`       |
 | `TOF`        | `TOF`     | `bit`, `preset_ms`       |
 | `CTU`        | `CTU`     | `bit`, `preset`          |
@@ -159,13 +159,15 @@ The TON in this simulator does **not** follow standard IEC 61131-3 semantics:
 - ACC accumulates freely while the input is energised (no cap at preset)
 - DN is never set; the timer never fires automatically
 - When the input de-energises, ACC **holds** its current value (does not reset)
-- ACC only resets to zero via `reset_timers_and_counters()` (the Reset button)
+- ACC only resets to zero via `reset_timers_and_counters()` (triggered by the `reset_all` coil)
 
 The timer acts as a pausable run-time accumulator. `preset_ms` is stored but neither displayed nor used in control logic.
 
 ### Cycle Counter Pattern
 
 The cycle counter (C0) uses a `NC Q0.0` contact feeding the CTU. Because the NC contact closes when Q0.0 goes False, the CTU sees a rising edge exactly when the motor transitions from running to stopped. This is pure ladder logic — no engine changes are needed to detect falling edges on output bits.
+
+Counter counts start at 0. `CounterState` carries an `initialized` flag: on the first scan (and after any reset), the engine skips the rising-edge check and just records the initial input state. This prevents the NC contact's already-closed state from being counted as a spurious first edge on startup or after a reset.
 
 Timer and counter blocks display only the type/bit header and live value (ACC ms or CNT). PRE and DN are not shown.
 
